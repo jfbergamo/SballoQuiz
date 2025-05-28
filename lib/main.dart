@@ -35,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// TODO: sistemare shuffle e uccidere polo
+// TODO: sistemare shuffle -> probabilmente riaggiungere currentQuestions
 
 const defaultTries = 3;
 
@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         _getQuestions();
 
-        player.setAsset("sounds/xbox.mp3").then((_) => player.play()).then((_) => player.setLoopMode(LoopMode.all));
+        player.setAsset("assets/sounds/ost.mp3").then((_) => player.play()).then((_) => player.setLoopMode(LoopMode.all));
     }
 
     void _getQuestions() {
@@ -80,6 +80,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     @override
     Widget build(BuildContext context) {
+        var list = [...(_questions[_questionIndex]['incorrect_answers'].map<String>((item) => item.toString())), (_questions[_questionIndex]['correct_answer'] as String)];
+        if (_reload) {
+            list.shuffle();
+            _reload = false;
+        }
         return Scaffold(
             appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -106,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     fontSize: 30
                                 ), 
                             ),
-                            ..._shuffle([...(_questions[_questionIndex]['incorrect_answers'].map<String>((item) => item.toString())), (_questions[_questionIndex]['correct_answer'] as String)])
+                            ...list
                             .map((answer) {
                                 return SballoButton(
                                     text: answer,
@@ -203,6 +208,8 @@ class _MyHomePageState extends State<MyHomePage> {
         _timer();
     }
 
+    ///////////////////// UTILS /////////////////////
+
     Future<void> _timer() async {
         const timeStep = Duration(milliseconds: 10);
         while (_timerGo && _currentTime > Duration.zero) {
@@ -215,8 +222,6 @@ class _MyHomePageState extends State<MyHomePage> {
             _displayStatus();
         }
     }
-
-    ///////////////////// UTILS /////////////////////
 
     List<String> _shuffle(List<String> list) {
         if (_reload) {
