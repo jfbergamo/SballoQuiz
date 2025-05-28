@@ -48,8 +48,8 @@ class _MyHomePageState extends State<MyHomePage> {
     int _status = 7;
     int _tries = defaultTries;
 
-    final totalSeconds = 1000.0;
-    late double _currentSeconds;
+    final maxTime = Duration(milliseconds: 10000);
+    late Duration _currentTime;
     bool _timerGo = true;
 
     final player = AudioPlayer();
@@ -57,19 +57,10 @@ class _MyHomePageState extends State<MyHomePage> {
     @override
     void initState() {
         super.initState();
-        _currentSeconds = totalSeconds;
+        _currentTime = maxTime;
+        _timer();
 
         _getQuestions();
-
-        _timer(Duration(seconds: totalSeconds.toInt()), () => setState(() {
-            if (!_timerGo) return;
-            if (_currentSeconds == 0) {
-                _checkAnswer('', '');
-                _timerGo = false;
-                return;
-            } 
-            _currentSeconds--;
-        }), 10);
 
         player.setAsset("sounds/xbox.mp3").then((_) => player.play()).then((_) => player.setLoopMode(LoopMode.all));
     }
@@ -103,8 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 activeColor: Colors.green,
                                 inactiveColor: Colors.grey,
                                 min: 0,
-                                max: totalSeconds,
-                                value: _currentSeconds,
+                                max: maxTime.inMilliseconds.toDouble(),
+                                value: _currentTime.inMilliseconds.toDouble(),
                                 onChanged: (value) {},
                             ),
                             Text(
@@ -132,23 +123,23 @@ class _MyHomePageState extends State<MyHomePage> {
     ///////////////////// MAIN FUNCTIONS /////////////////////
 
     void _checkAnswer(String answer, String correctAnswer) {
-        if (_currentSeconds <= 0) {
-            _status = -7;
+        if (answer == correctAnswer) {
+            _status = 1;
+            _timerGo = false;
         } else {
-            if (answer == correctAnswer) {
-                _status = 1;
+            _tries--;
+            if (_tries <= 0) {
+                _timerGo = false;
+                _status = -1;
             } else {
-                _tries--;
-                if (_tries <= 0) {
-                    _status = -1;
-                } else {
-                    _status = 0;
-                }
+                _status = 0;
             }
         }
+        _displayStatus();
+    }
 
+    void _displayStatus() {
         const fontSize = 25.0;
-
         showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
@@ -191,31 +182,31 @@ class _MyHomePageState extends State<MyHomePage> {
                         autofocus: true,
                         child: const Text('LETSGOSKI'),
                         onPressed: () {
-                            // Navigator.of(ctx).pop(true);
+                            Navigator.of(ctx).pop(true);
                             if (_status == 1 || _status == -1 || _status == -7 ) _nextQuestion();
                         },
                     )
                 ],
             )
        );
-
     }
 
     void _nextQuestion() {
         _status = 7;
         _tries = 5;
         _reload = true;
-        _currentSeconds = totalSeconds;
+        _currentTime = maxTime;
         _timerGo = true;
         setState(() => _questionIndex = (_questionIndex + 1) % [..._questions].length);
+        _timer();
     }
 
-    Future<void> _timer(Duration secs, Function() onTime, int step) async {
-        var timeStep = Duration(milliseconds: step);
-        while (secs > Duration.zero) {
+    Future<void> _timer() async {
+        const timeStep = Duration(milliseconds: 10);
+        while (_timerGo && _currentTime >= Duration.zero) {
             await Future.delayed(timeStep);
-            onTime();
-            secs -= timeStep;
+            _currentTime -= timeStep;
+            setState(() {});
         }
     }
 
