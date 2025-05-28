@@ -205,10 +205,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Future<void> _timer() async {
         const timeStep = Duration(milliseconds: 10);
-        while (_timerGo && _currentTime >= Duration.zero) {
+        while (_timerGo && _currentTime > Duration.zero) {
             await Future.delayed(timeStep);
             _currentTime -= timeStep;
             setState(() {});
+        }
+        if (_timerGo) {
+            _status = -7;
+            _displayStatus();
         }
     }
 
