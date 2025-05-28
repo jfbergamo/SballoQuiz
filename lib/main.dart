@@ -35,6 +35,8 @@ class MyHomePage extends StatefulWidget {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// TODO: sistemare shuffle e uccidere polo
+
 const defaultTries = 3;
 
 class _MyHomePageState extends State<MyHomePage> {
